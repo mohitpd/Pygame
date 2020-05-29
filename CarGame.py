@@ -1,7 +1,6 @@
 import pygame
 import time
 import random
-from sys import exit
 
 pygame.init()
 
@@ -14,9 +13,13 @@ pygame.display.set_caption("First Pygame")
 black = (0,0,0)
 white = (255,255,255)
 red = (255,0,0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+dull_green = (0, 200, 0)
+dull_red = (200, 0, 0)
 
 img = pygame.image.load('racecar.png')
-car_width = 71
+car_width = 84
 
 clock = pygame.time.Clock()
 
@@ -46,8 +49,66 @@ def message_display(text):
     game_loop()
 
 def crash():
-    message_display("You Crashed")
+    largeText = pygame.font.Font("freesansbold.ttf", 115)
+    TextSurf, TextRect = text_objects("You Crashed", largeText)
+    TextRect.center = ((display_width/2), (display_height/2))
+    gameDisplay.blit(TextSurf, TextRect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        button("Play Again", 150,450,150, 50, dull_green, green, game_loop)
+        button("Quit", 550, 450, 150, 50, dull_red, red, quitgame)
+
+        pygame.display.update()
+        clock.tick(15)
+
+def game_intro():
+    intro = True
+
+    while intro:
+        for event in pygame.event.get():
+            #print(event)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        gameDisplay.fill(white)
+        largeText = pygame.font.Font("freesansbold.ttf", 115)
+        TextSurf, TextRect = text_objects("Car Game", largeText)
+        TextRect.center = ((display_width/2), (display_height/2))
+        gameDisplay.blit(TextSurf, TextRect)
+
+        button("GO!", 150, 450, 100, 50, dull_green, green, game_loop)
+        button("QUIT", 550, 450, 100, 50, dull_red, red, quitgame)
+        pygame.display.update()
+        clock.tick(15)
+
+def button(msg, x, y, w, h, ic, ac, action = None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    #print(click)
+
+    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+            pygame.draw.rect(gameDisplay, ac, (x,y,w,h))
+            if click[0] == 1 and action != None:
+                action()
+            
+    else:
+            pygame.draw.rect(gameDisplay, ic, (x, y, w, h))
+
+    smallText = pygame.font.SysFont("Consolas",20)
+    textSurf, textRect = text_objects(msg, smallText)
+    textRect.center = ( (x+(w/2)), (y+(h/2)) )
+    gameDisplay.blit(textSurf, textRect)
     
+def quitgame():
+    pygame.quit()
+    quit()
+
 def game_loop():
     x = (display_width*0.45)
     y = (display_height*0.8)
@@ -97,10 +158,7 @@ def game_loop():
             thing_speed += 0.5
 
         if y < thing_starty + thing_height:
-            print("Y Crossover")
-
             if x > thing_startx and x < thing_startx + thing_width or x+car_width > thing_startx and x + car_width < thing_startx + thing_width:
-                print("X Crossover")
                 crash()
 
         if thing_starty > display_height:
@@ -110,8 +168,8 @@ def game_loop():
         pygame.display.update()
         clock.tick(60)
 
+game_intro()
 game_loop()
-exit()
-pygame.display.quit()
 pygame.quit()
+quit()
 
