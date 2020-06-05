@@ -1,18 +1,25 @@
 import pygame
 import random
 
+pygame.init()
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 white = (255, 255, 255)
 black = (0, 0, 0)
+speed = 30
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.surf = pygame.Surface((75,25))
-        self.surf.fill(white)
-        self.rect = self.surf.get_rect()
+        self.surf = pygame.image.load("jet.png").convert()
+        self.surf.set_colorkey(white)
+        self.rect = self.surf.get_rect(
+                            center = (
+                                    60, SCREEN_HEIGHT/2
+                                )
+                            )
 
     def update(self, pressed_keys):
         if pressed_keys[pygame.K_UP]:
@@ -36,8 +43,8 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super(Enemy, self).__init__()
-        self.surf = pygame.Surface((20, 10))
-        self.surf.fill(white)
+        self.surf = pygame.image.load("missile.png").convert()
+        self.surf.set_colorkey((255, 255, 255), pygame.RLEACCEL)
         self.rect = self.surf.get_rect(
                             center = (
                                     random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH +100),
@@ -51,12 +58,11 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
-pygame.init()
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
 ADDENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(ADDENEMY, 250)
+pygame.time.set_timer(ADDENEMY, 500)
 
 player = Player()
 
@@ -84,15 +90,29 @@ while running:
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
     enemies.update()
-    screen.fill(black)
+    screen.fill((135, 206, 235))
 
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
+
+    # Check if any enemies have collided with the player
+    if pygame.sprite.spritecollideany(player, enemies):
+        # If so, then remove the player and stop the loop
+        player.kill()
+        running = False
     #surf = pygame.Surface((50, 50))
     #surf.fill(black)
     #rect = surf.get_rect()
     #screen.blit(player.surf, player.rect)
+##    if start_time:
+##        time_since_enter = pygame.time.get_ticks() - start_time
+##        message = 'Milliseconds since enter: ' + str(time_since_enter)
+##        screen.blit(FONT.render(message, True, TEXT_COLOR), (20, 20))
+##    print(pygame.time.get_ticks())
     pygame.display.flip()
-    clock.tick(60)
+    if pygame.time.get_ticks()%5000 <50:
+        speed=speed+1
+        print(speed)
+    clock.tick(speed)
 
 pygame.quit()
