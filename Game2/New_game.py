@@ -1,8 +1,13 @@
 import pygame
 import random
+import os
 
+##pygame.mixer.init()
+pygame.mixer.pre_init(16500, -16, 2, 2048)
 pygame.init()
+clock = pygame.time.Clock()
 
+dodge = 0
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
@@ -10,6 +15,12 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 speed = 30
 
+
+def things_dodged(count):
+    font = pygame.font.SysFont("Consolas", 15)
+    text = font.render("Dodged: "+str(count), True, black)
+    screen.blit(text,(0,0))
+    
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
@@ -54,8 +65,12 @@ class Enemy(pygame.sprite.Sprite):
         self.speed = random.randint(5, 20)
 
     def update(self):
+        global dodge
         self.rect.move_ip(-self.speed, 0)
         if self.rect.right < 0:
+            dodge += 1
+##            print(dodge)
+            things_dodged(dodge)
             self.kill()
 
 
@@ -65,12 +80,14 @@ ADDENEMY = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDENEMY, 500)
 
 player = Player()
-
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
-clock = pygame.time.Clock()
+#Load and play Background Music
+pygame.mixer.music.load("jazz.mp3")
+pygame.mixer.music.play(loops = -1)
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -91,6 +108,7 @@ while running:
     player.update(pressed_keys)
     enemies.update()
     screen.fill((135, 206, 235))
+    things_dodged(dodge)
 
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
@@ -100,19 +118,14 @@ while running:
         # If so, then remove the player and stop the loop
         player.kill()
         running = False
-    #surf = pygame.Surface((50, 50))
-    #surf.fill(black)
-    #rect = surf.get_rect()
-    #screen.blit(player.surf, player.rect)
-##    if start_time:
-##        time_since_enter = pygame.time.get_ticks() - start_time
-##        message = 'Milliseconds since enter: ' + str(time_since_enter)
-##        screen.blit(FONT.render(message, True, TEXT_COLOR), (20, 20))
-##    print(pygame.time.get_ticks())
+
+
     pygame.display.flip()
     if pygame.time.get_ticks()%5000 <50:
         speed=speed+1
-        print(speed)
+        #print(speed)
     clock.tick(speed)
 
+pygame.mixer.music.stop()
+pygame.mixer.quit()
 pygame.quit()
